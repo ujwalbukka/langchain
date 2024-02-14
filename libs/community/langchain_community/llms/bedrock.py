@@ -223,6 +223,15 @@ class BedrockBase(BaseModel, ABC):
     config: Any = None
     """An optional botocore.config.Config instance to pass to the client."""
 
+    aws_access_key_id: str = None
+    """AWS access key id."""
+
+    aws_secret_access_key: str = None
+    """AWS secret access key."""
+
+    aws_session_token: str = None
+    """AWS temporary session token."""
+
     provider: Optional[str] = None
     """The model provider, e.g., amazon, cohere, ai21, etc. When not supplied, provider
     is extracted from the first part of the model_id e.g. 'amazon' in 
@@ -311,6 +320,12 @@ class BedrockBase(BaseModel, ABC):
 
             if values["credentials_profile_name"] is not None:
                 session = boto3.Session(profile_name=values["credentials_profile_name"])
+            elif values["aws_access_key_id"] is not None and values["aws_secret_access_key"] is not None and values["aws_session_token"] is not None:
+                session = boto3.Session(
+                    aws_access_key_id=values["aws_access_key_id"],
+                    aws_secret_access_key=values["aws_secret_access_key"],
+                    aws_session_token=values["aws_session_token"],
+                )
             else:
                 # use default credentials
                 session = boto3.Session()
@@ -341,7 +356,7 @@ class BedrockBase(BaseModel, ABC):
             raise ValueError(
                 "Could not load credentials to authenticate with AWS client. "
                 "Please check that credentials in the specified "
-                "profile name are valid."
+                "profile name or provided access key, secret access key and session token are valid."
             ) from e
 
         return values
